@@ -73,3 +73,40 @@ class EarlyStopper:
             if self.counter >= self.patience:
                 return True
         return False
+    
+class MLP(nn.Module):
+
+    def __init__(self, no_features, no_hidden, no_labels):
+        super().__init__()
+        self.mlp_stack = nn.Sequential(
+            # YOUR CODE HERE
+            nn.Linear(no_features, no_hidden),
+            nn.ReLU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(no_hidden, no_hidden),
+            nn.ReLU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(no_hidden, no_hidden),
+            nn.ReLU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(no_hidden, no_labels),
+            nn.Sigmoid()
+        )
+
+    # YOUR CODE HERE
+    def forward(self, x):
+         logits = self.mlp_stack(x)
+         return logits
+    
+class CustomDataset(Dataset):
+    def __init__(self, X, y):
+        self.X = torch.tensor(X[:, 1:], dtype=torch.float)
+        self.y = torch.tensor(y, dtype=torch.long)
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
+    
+loss_fn = nn.CrossEntropyLoss()
