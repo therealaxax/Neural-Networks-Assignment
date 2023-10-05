@@ -55,7 +55,6 @@ def set_seed(seed = 0):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
 
-
 # early stopping obtained from tutorial
 class EarlyStopper:
     def __init__(self, patience=3, min_delta=0):
@@ -110,3 +109,36 @@ class CustomDataset(Dataset):
         return self.X[idx], self.y[idx]
     
 loss_fn = nn.CrossEntropyLoss()
+
+def generate_cv_folds_for_batch_sizes(parameters, X_train, y_train):
+    batch_sizes = parameters
+    
+    cv = KFold(n_splits=5, shuffle=True, random_state=1)
+    
+    X_train_scaled_dict = {}
+    X_val_scaled_dict = {}
+    y_train_dict = {}
+    y_val_dict = {}
+
+    for batch_size in batch_sizes:
+        X_train_scaled_dict[batch_size] = []
+        X_val_scaled_dict[batch_size] = []
+        y_train_dict[batch_size] = []
+        y_val_dict[batch_size] = []
+    
+    X_train = X_train[:, 1:]
+    for train_idx, val_idx in cv.split(X_train):
+        X_train_fold, X_val_fold = X_train[train_idx], X_train[val_idx]
+        y_train_fold, y_val_fold = y_train[train_idx], y_train[val_idx]
+        
+        standard_scaler = preprocessing.StandardScaler()
+        X_train_fold_scaled = standard_scaler.fit_transform(X_train_fold)
+        X_val_fold_scaled = standard_scaler.fit_transform(X_val_fold)
+        
+        for batch_size in batch_sizes:
+            X_train_scaled_dict[batch_size].append(X_train_fold_scaled)
+            X_val_scaled_dict[batch_size].append(X_val_fold_scaled)
+            y_train_dict[batch_size].append(y_train_fold)
+            y_val_dict[batch_size].append(y_val_fold)
+    
+    return X_train_scaled_dict, X_val_scaled_dict, y_train_dict, y_val_dict
