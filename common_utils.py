@@ -99,7 +99,7 @@ class MLP(nn.Module):
     
 class CustomDataset(Dataset):
     def __init__(self, X, y):
-        self.X = torch.tensor(X[:, 1:], dtype=torch.float)
+        self.X = torch.tensor(X, dtype=torch.float)
         self.y = torch.tensor(y, dtype=torch.long)
 
     def __len__(self):
@@ -126,7 +126,6 @@ def generate_cv_folds_for_batch_sizes(parameters, X_train, y_train):
         y_train_dict[batch_size] = []
         y_val_dict[batch_size] = []
     
-    X_train = X_train[:, 1:]
     for train_idx, val_idx in cv.split(X_train):
         X_train_fold, X_val_fold = X_train[train_idx], X_train[val_idx]
         y_train_fold, y_val_fold = y_train[train_idx], y_train[val_idx]
